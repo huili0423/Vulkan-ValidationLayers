@@ -2163,4 +2163,16 @@ bool Device::manual_PreCallValidateGetMicromapBuildSizesEXT(VkDevice device, VkA
 
     return skip;
 }
+bool Device::manual_PreCallValidateCmdBuildPartitionedAccelerationStructuresNV(VkCommandBuffer commandBuffer,
+                                                                               const VkBuildPartitionedAccelerationStructureInfoNV *pBuildInfo,
+                                                                               const Context &context) const {
+    bool skip = false;
+    const auto &error_obj = context.error_obj;
+    skip |= context.ValidateStructType(error_obj.location.dot(Field::pBuildInfo).dot(Field::input), &(pBuildInfo->input),
+                                       VK_STRUCTURE_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_INSTANCES_INPUT_NV, true,
+                                       "VUID-VkBuildPartitionedAccelerationStructureInfoNV-input-parameter",
+                                       "VUID-VkBuildPartitionedAccelerationStructureInfoNV-input-parameter");  
+  
+    return skip;
+}
 }  // namespace stateless
