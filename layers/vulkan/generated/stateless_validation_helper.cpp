@@ -25678,6 +25678,7 @@ bool Device::PreCallValidateGetClusterAccelerationStructureBuildSizesNV(VkDevice
         skip |= context.ValidateStructPnext(pSizeInfo_loc, pSizeInfo->pNext, 0, nullptr, GeneratedVulkanHeaderVersion,
                                             "VUID-VkAccelerationStructureBuildSizesInfoKHR-pNext-pNext", kVUIDUndefined, false);
     }
+    if (!skip) skip |= manual_PreCallValidateGetClusterAccelerationStructureBuildSizesNV(device, pInfo, pSizeInfo, context);
     return skip;
 }
 
@@ -25724,6 +25725,7 @@ bool Device::PreCallValidateCmdBuildClusterAccelerationStructureIndirectNV(
                                       pCommandInfos->addressResolutionFlags, kOptionalFlags,
                                       "VUID-VkClusterAccelerationStructureCommandsInfoNV-addressResolutionFlags-parameter");
     }
+    if (!skip) skip |= manual_PreCallValidateCmdBuildClusterAccelerationStructureIndirectNV(commandBuffer, pCommandInfos, context);
     return skip;
 }
 

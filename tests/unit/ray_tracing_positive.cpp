@@ -2259,7 +2259,7 @@ TEST_F(PositiveRayTracing, CmdBuildClusterAccelerationStructureIndirect) {
             break;
         }
     }
-    // valdiate CmdBuildClusterAccelerationStructureIndirectNV has the valid output
+    // validate CmdBuildClusterAccelerationStructureIndirectNV has the valid output
     ASSERT_TRUE(has_data);
 }
 

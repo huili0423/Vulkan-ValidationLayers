@@ -2401,10 +2401,8 @@ bool CoreChecks::PreCallValidateCmdBuildClusterAccelerationStructureIndirectNV(
         DispatchGetClusterAccelerationStructureBuildSizesNV(device, &(pCommandInfos->input), &accelerationStructure_size);
         BufferAddressValidation<2> scratch_buffer_validator = {{{
             {"VUID-vkCmdBuildClusterAccelerationStructureIndirectNV-scratchData-10446",
-             [&accelerationStructure_size, this](const vvl::Buffer &buffer_state) {
-                 VkMemoryRequirements mem_requirements;
-                 DispatchGetBufferMemoryRequirements(device, buffer_state.VkHandle(), &mem_requirements);
-                 return mem_requirements.size < accelerationStructure_size.buildScratchSize;
+             [&accelerationStructure_size](const vvl::Buffer &buffer_state) {
+                 return buffer_state.create_info.size < accelerationStructure_size.buildScratchSize;
              },
              [&accelerationStructure_size]() {
                  return "The scratch memory of the cluster acceleration structure specified in "
@@ -2413,10 +2411,8 @@ bool CoreChecks::PreCallValidateCmdBuildClusterAccelerationStructureIndirectNV(
                         std::to_string(accelerationStructure_size.buildScratchSize) +
                         ") queried with vkGetClusterAccelerationStructureBuildSizesNV";
              },
-             [this](const vvl::Buffer &buffer_state) {
-                 VkMemoryRequirements mem_requirements;
-                 DispatchGetBufferMemoryRequirements(device, buffer_state.VkHandle(), &mem_requirements);
-                 return "buffer size " + std::to_string(mem_requirements.size) + " is less than required scratch size";
+             [](const vvl::Buffer &buffer_state) {
+                 return "buffer size " + std::to_string(buffer_state.create_info.size) + " is less than required scratch size";
              }},
             {"VUID-vkCmdBuildClusterAccelerationStructureIndirectNV-pCommandInfos-10457",
              [](const vvl::Buffer &buffer_state) {
@@ -2643,21 +2639,21 @@ bool CoreChecks::ValidateClusterAccelerationStructureCommandsInfoNV(
     // aligned based on the cluster acceleration structure type and its alignment properties as described in
     // VkPhysicalDeviceClusterAccelerationStructurePropertiesNV
     uint32_t alignment_type = 1;
-    const char *vvuid = kVUIDUndefined;
+    const char *vuid = kVUIDUndefined;
     switch (command_infos.input.opType) {
         case VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_TRIANGLE_CLUSTER_TEMPLATE_NV:
             alignment_type = phys_dev_ext_props.cluster_acceleration_props.clusterTemplateByteAlignment;
-            vvuid = "VUID-VkClusterAccelerationStructureCommandsInfoNV-input-10478";
+            vuid = "VUID-VkClusterAccelerationStructureCommandsInfoNV-input-10478";
             break;
 
         case VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_TRIANGLE_CLUSTER_NV:
             alignment_type = phys_dev_ext_props.cluster_acceleration_props.clusterByteAlignment;
-            vvuid = "VUID-VkClusterAccelerationStructureCommandsInfoNV-input-10477";
+            vuid = "VUID-VkClusterAccelerationStructureCommandsInfoNV-input-10477";
             break;
 
         case VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_INSTANTIATE_TRIANGLE_CLUSTER_NV:
             alignment_type = phys_dev_ext_props.cluster_acceleration_props.clusterByteAlignment;
-            vvuid = "VUID-VkClusterAccelerationStructureCommandsInfoNV-input-10479";
+            vuid = "VUID-VkClusterAccelerationStructureCommandsInfoNV-input-10479";
             break;
 
         case VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_GET_CLUSTER_TEMPLATE_INDICES_NV:
@@ -2677,7 +2673,7 @@ bool CoreChecks::ValidateClusterAccelerationStructureCommandsInfoNV(
                 ") must be a valid address if input::opMode is VK_CLUSTER_ACCELERATION_STRUCTURE_OP_MODE_IMPLICIT_DESTINATIONS_NV",
                 command_infos.dstImplicitData);
         } else if (SafeModulo(command_infos.dstImplicitData, alignment_type) != 0) {
-            skip |= LogError(vvuid, device, command_infos_loc.dot(Field::dstImplicitData),
+            skip |= LogError(vuid, device, command_infos_loc.dot(Field::dstImplicitData),
                              "(0x%" PRIx64 ") or addresses specified in dstAddressesArray must be aligned to (%" PRIu32
                              ") depending on the input::opMode (%s), if input::opType is "
                              "VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_TRIANGLE_CLUSTER_NV",
@@ -2688,10 +2684,8 @@ bool CoreChecks::ValidateClusterAccelerationStructureCommandsInfoNV(
                 command_infos.input.opType != VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_MOVE_OBJECTS_NV) {
                 BufferAddressValidation<1> dst_implicit_size_validator = {{{
                     {"VUID-VkClusterAccelerationStructureCommandsInfoNV-opMode-10467",
-                     [&accelerationStructure_size, this](const vvl::Buffer &buffer_state) {
-                         VkMemoryRequirements mem_requirements;
-                         DispatchGetBufferMemoryRequirements(device, buffer_state.VkHandle(), &mem_requirements);
-                         return mem_requirements.size < accelerationStructure_size.accelerationStructureSize;
+                     [&accelerationStructure_size](const vvl::Buffer &buffer_state) {
+                         return buffer_state.create_info.size < accelerationStructure_size.accelerationStructureSize;
                      },
                      [&accelerationStructure_size]() {
                          return "If input::opMode is VK_CLUSTER_ACCELERATION_STRUCTURE_OP_MODE_IMPLICIT_DESTINATIONS_NV and "
@@ -2702,10 +2696,8 @@ bool CoreChecks::ValidateClusterAccelerationStructureCommandsInfoNV(
                                 ") returned from "
                                 "vkGetClusterAccelerationStructureBuildSizesNV with same input parameters";
                      },
-                     [this](const vvl::Buffer &buffer_state) {
-                         VkMemoryRequirements mem_requirements;
-                         DispatchGetBufferMemoryRequirements(device, buffer_state.VkHandle(), &mem_requirements);
-                         return "buffer size " + std::to_string(mem_requirements.size) +
+                     [](const vvl::Buffer &buffer_state) {
+                         return "buffer size " + std::to_string(buffer_state.create_info.size) +
                                 " is less than required acceleration structure size";
                      }},
                 }}};
@@ -2740,10 +2732,8 @@ bool CoreChecks::ValidateClusterAccelerationStructureCommandsInfoNV(
                    command_infos.input.opType != VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_MOVE_OBJECTS_NV) {
             BufferAddressValidation<1> dst_addresses_size_validator = {{{
                 {"VUID-VkClusterAccelerationStructureCommandsInfoNV-opMode-10471",
-                 [&accelerationStructure_size, this](const vvl::Buffer &buffer_state) {
-                     VkMemoryRequirements mem_requirements;
-                     DispatchGetBufferMemoryRequirements(device, buffer_state.VkHandle(), &mem_requirements);
-                     return mem_requirements.size < accelerationStructure_size.accelerationStructureSize;
+                 [&accelerationStructure_size](const vvl::Buffer &buffer_state) {
+                     return buffer_state.create_info.size < accelerationStructure_size.accelerationStructureSize;
                  },
                  [&accelerationStructure_size]() {
                      return "If input::opMode is VK_CLUSTER_ACCELERATION_STRUCTURE_OP_MODE_EXPLICIT_DESTINATIONS_NV and "
@@ -2754,10 +2744,8 @@ bool CoreChecks::ValidateClusterAccelerationStructureCommandsInfoNV(
                             ") returned from "
                             "vkGetClusterAccelerationStructureBuildSizesNV with same input parameters";
                  },
-                 [this](const vvl::Buffer &buffer_state) {
-                     VkMemoryRequirements mem_requirements;
-                     DispatchGetBufferMemoryRequirements(device, buffer_state.VkHandle(), &mem_requirements);
-                     return "buffer size " + std::to_string(mem_requirements.size) +
+                 [](const vvl::Buffer &buffer_state) {
+                     return "buffer size " + std::to_string(buffer_state.create_info.size) +
                             " is less than required acceleration structure size";
                  }},
             }}};

@@ -5168,3 +5168,184 @@ TEST_F(NegativeRayTracing, ClusterAccelerationStructureTriangleClusterInput) {
 
     m_command_buffer.End();
 }
+
+TEST_F(NegativeRayTracing, ClusterAccelerationStructureTriangleClusterStatelessValidation) {
+    TEST_DESCRIPTION("Test stateless validation of VkClusterAccelerationStructureTriangleClusterInputNV sType and pNext");
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    AddRequiredExtensions(VK_NV_CLUSTER_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+    AddRequiredFeature(vkt::Feature::rayTracingPipeline);
+    AddRequiredFeature(vkt::Feature::accelerationStructure);
+    AddRequiredFeature(vkt::Feature::bufferDeviceAddress);
+    AddRequiredFeature(vkt::Feature::rayQuery);
+    AddRequiredFeature(vkt::Feature::clusterAccelerationStructure);
+    RETURN_IF_SKIP(InitFrameworkForRayTracingTest());
+    RETURN_IF_SKIP(InitState());
+    {
+        VkClusterAccelerationStructureTriangleClusterInputNV tri_cluster = vku::InitStructHelper();
+        tri_cluster.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;  // Wrong sType
+        tri_cluster.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
+        tri_cluster.maxClusterTriangleCount = 1;
+        tri_cluster.maxClusterVertexCount = 3;
+
+        VkClusterAccelerationStructureOpInputNV input = {};
+        input.pTriangleClusters = &tri_cluster;
+
+        VkClusterAccelerationStructureInputInfoNV input_info = vku::InitStructHelper();
+        input_info.opType = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_TRIANGLE_CLUSTER_NV;
+        input_info.opInput = input;
+
+        VkAccelerationStructureBuildSizesInfoKHR size_info = vku::InitStructHelper();
+        m_errorMonitor->SetDesiredError("VUID-VkClusterAccelerationStructureTriangleClusterInputNV-sType-sType");
+        vk::GetClusterAccelerationStructureBuildSizesNV(*m_device, &input_info, &size_info);
+        m_errorMonitor->VerifyFound();
+    }
+
+    {
+        VkBufferCreateInfo invalid_pnext = vku::InitStructHelper();
+        VkClusterAccelerationStructureTriangleClusterInputNV tri_cluster = vku::InitStructHelper(&invalid_pnext);
+        tri_cluster.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
+        tri_cluster.maxClusterTriangleCount = 1;
+        tri_cluster.maxClusterVertexCount = 3;
+
+        VkClusterAccelerationStructureOpInputNV input = {};
+        input.pTriangleClusters = &tri_cluster;
+
+        VkClusterAccelerationStructureInputInfoNV input_info = vku::InitStructHelper();
+        input_info.opType = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_TRIANGLE_CLUSTER_NV;
+        input_info.opInput = input;
+
+        VkAccelerationStructureBuildSizesInfoKHR size_info = vku::InitStructHelper();
+        m_errorMonitor->SetDesiredError("VUID-VkClusterAccelerationStructureTriangleClusterInputNV-pNext-pNext");
+        vk::GetClusterAccelerationStructureBuildSizesNV(*m_device, &input_info, &size_info);
+        m_errorMonitor->VerifyFound();
+    }
+    {
+        VkClusterAccelerationStructureTriangleClusterInputNV tri_cluster = vku::InitStructHelper();
+        // Invalid enum value
+        tri_cluster.vertexFormat = static_cast<VkFormat>(999);
+        tri_cluster.maxClusterTriangleCount = 1;
+        tri_cluster.maxClusterVertexCount = 3;
+
+        VkClusterAccelerationStructureOpInputNV input = {};
+        input.pTriangleClusters = &tri_cluster;
+
+        VkClusterAccelerationStructureInputInfoNV input_info = vku::InitStructHelper();
+        input_info.opType = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_TRIANGLE_CLUSTER_NV;
+        input_info.opInput = input;
+
+        VkAccelerationStructureBuildSizesInfoKHR size_info = vku::InitStructHelper();
+        m_errorMonitor->SetDesiredError("VUID-VkClusterAccelerationStructureTriangleClusterInputNV-vertexFormat-parameter");
+        vk::GetClusterAccelerationStructureBuildSizesNV(*m_device, &input_info, &size_info);
+        m_errorMonitor->VerifyFound();
+    }
+}
+
+TEST_F(NegativeRayTracing, ClusterAccelerationStructureMoveObjectsStatelessValidation) {
+    TEST_DESCRIPTION("Test stateless validation of VkClusterAccelerationStructureMoveObjectsInputNV sType, pNext, and type enum");
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    AddRequiredExtensions(VK_NV_CLUSTER_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+    AddRequiredFeature(vkt::Feature::rayTracingPipeline);
+    AddRequiredFeature(vkt::Feature::accelerationStructure);
+    AddRequiredFeature(vkt::Feature::bufferDeviceAddress);
+    AddRequiredFeature(vkt::Feature::rayQuery);
+    AddRequiredFeature(vkt::Feature::clusterAccelerationStructure);
+    RETURN_IF_SKIP(InitFrameworkForRayTracingTest());
+    RETURN_IF_SKIP(InitState());
+    {
+        VkClusterAccelerationStructureMoveObjectsInputNV move_objects = vku::InitStructHelper();
+        move_objects.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        move_objects.type = VK_CLUSTER_ACCELERATION_STRUCTURE_TYPE_TRIANGLE_CLUSTER_NV;
+
+        VkClusterAccelerationStructureOpInputNV input = {};
+        input.pMoveObjects = &move_objects;
+
+        VkClusterAccelerationStructureInputInfoNV input_info = vku::InitStructHelper();
+        input_info.opType = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_MOVE_OBJECTS_NV;
+        input_info.opInput = input;
+
+        VkAccelerationStructureBuildSizesInfoKHR size_info = vku::InitStructHelper();
+        m_errorMonitor->SetDesiredError("VUID-VkClusterAccelerationStructureMoveObjectsInputNV-sType-sType");
+        vk::GetClusterAccelerationStructureBuildSizesNV(*m_device, &input_info, &size_info);
+        m_errorMonitor->VerifyFound();
+    }
+    {
+        VkBufferCreateInfo invalid_pnext = vku::InitStructHelper();
+        VkClusterAccelerationStructureMoveObjectsInputNV move_objects = vku::InitStructHelper(&invalid_pnext);
+        move_objects.type = VK_CLUSTER_ACCELERATION_STRUCTURE_TYPE_TRIANGLE_CLUSTER_NV;
+
+        VkClusterAccelerationStructureOpInputNV input = {};
+        input.pMoveObjects = &move_objects;
+
+        VkClusterAccelerationStructureInputInfoNV input_info = vku::InitStructHelper();
+        input_info.opType = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_MOVE_OBJECTS_NV;
+        input_info.opInput = input;
+
+        VkAccelerationStructureBuildSizesInfoKHR size_info = vku::InitStructHelper();
+        m_errorMonitor->SetDesiredError("VUID-VkClusterAccelerationStructureMoveObjectsInputNV-pNext-pNext");
+        vk::GetClusterAccelerationStructureBuildSizesNV(*m_device, &input_info, &size_info);
+        m_errorMonitor->VerifyFound();
+    }
+    {
+        VkClusterAccelerationStructureMoveObjectsInputNV move_objects = vku::InitStructHelper();
+        // Invalid enum value
+        move_objects.type = static_cast<VkClusterAccelerationStructureTypeNV>(999);
+
+        VkClusterAccelerationStructureOpInputNV input = {};
+        input.pMoveObjects = &move_objects;
+
+        VkClusterAccelerationStructureInputInfoNV input_info = vku::InitStructHelper();
+        input_info.opType = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_MOVE_OBJECTS_NV;
+        input_info.opInput = input;
+
+        VkAccelerationStructureBuildSizesInfoKHR size_info = vku::InitStructHelper();
+        m_errorMonitor->SetDesiredError("VUID-VkClusterAccelerationStructureMoveObjectsInputNV-type-parameter");
+        vk::GetClusterAccelerationStructureBuildSizesNV(*m_device, &input_info, &size_info);
+        m_errorMonitor->VerifyFound();
+    }
+}
+
+TEST_F(NegativeRayTracing, ClusterAccelerationStructureClustersBottomLevelStatelessValidation) {
+    TEST_DESCRIPTION("Test stateless validation of VkClusterAccelerationStructureClustersBottomLevelInputNV sType and pNext");
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    AddRequiredExtensions(VK_NV_CLUSTER_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+    AddRequiredFeature(vkt::Feature::rayTracingPipeline);
+    AddRequiredFeature(vkt::Feature::accelerationStructure);
+    AddRequiredFeature(vkt::Feature::bufferDeviceAddress);
+    AddRequiredFeature(vkt::Feature::rayQuery);
+    AddRequiredFeature(vkt::Feature::clusterAccelerationStructure);
+    RETURN_IF_SKIP(InitFrameworkForRayTracingTest());
+    RETURN_IF_SKIP(InitState());
+
+    {
+        VkClusterAccelerationStructureClustersBottomLevelInputNV bottom_level = vku::InitStructHelper();
+        bottom_level.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;  // Wrong sType
+
+        VkClusterAccelerationStructureOpInputNV input = {};
+        input.pClustersBottomLevel = &bottom_level;
+
+        VkClusterAccelerationStructureInputInfoNV input_info = vku::InitStructHelper();
+        input_info.opType = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_CLUSTERS_BOTTOM_LEVEL_NV;
+        input_info.opInput = input;
+
+        VkAccelerationStructureBuildSizesInfoKHR size_info = vku::InitStructHelper();
+        m_errorMonitor->SetDesiredError("VUID-VkClusterAccelerationStructureClustersBottomLevelInputNV-sType-sType");
+        vk::GetClusterAccelerationStructureBuildSizesNV(*m_device, &input_info, &size_info);
+        m_errorMonitor->VerifyFound();
+    }
+    {
+        VkBufferCreateInfo invalid_pnext = vku::InitStructHelper();
+        VkClusterAccelerationStructureClustersBottomLevelInputNV bottom_level = vku::InitStructHelper(&invalid_pnext);
+
+        VkClusterAccelerationStructureOpInputNV input = {};
+        input.pClustersBottomLevel = &bottom_level;
+
+        VkClusterAccelerationStructureInputInfoNV input_info = vku::InitStructHelper();
+        input_info.opType = VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_CLUSTERS_BOTTOM_LEVEL_NV;
+        input_info.opInput = input;
+
+        VkAccelerationStructureBuildSizesInfoKHR size_info = vku::InitStructHelper();
+        m_errorMonitor->SetDesiredError("VUID-VkClusterAccelerationStructureClustersBottomLevelInputNV-pNext-pNext");
+        vk::GetClusterAccelerationStructureBuildSizesNV(*m_device, &input_info, &size_info);
+        m_errorMonitor->VerifyFound();
+    }
+}
